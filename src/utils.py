@@ -53,3 +53,14 @@ def load_obj_tsv(fname, topk=None):
     print("Loaded %d images in file %s in %d seconds." % (len(data), fname, elapsed_time))
     return data
 
+
+def load_csv(filename, delimiter=',', topk=None):
+    with open(os.path.join(filename), 'r', encoding='utf-8') as c:
+        counter = 0
+        reader = csv.DictReader(c, delimiter=delimiter)
+        for row in reader:
+            counter += 1
+            if topk is not None and counter == topk:
+                break
+            yield row
+
