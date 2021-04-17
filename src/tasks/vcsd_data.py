@@ -95,7 +95,7 @@ class VCSDTorchDataset(Dataset):
         counter = 0
         for split in dataset.splits:
             for datum in dataset.data:
-                if topk is not None and counter = topk:
+                if topk is not None and counter == topk:
                     break
                 raw_img_path = os.path.join(VCSD_IMG_RAW, '{}.jpg'.format(datum['raw_image_id']))
                 img = Image.open(raw_img_path).convert('RGB')
