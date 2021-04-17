@@ -28,8 +28,12 @@ class VCSDModel(nn.Module):
         self.logit_fc.apply(self.lxrt_encoder.model.init_bert_weights)
 
     def forward(self, utterance, response, img):
-        text = utterance + "<sep>" + response
-        x = self.lxrt_encoder(text, img)
+        # text = utterance + "<sep>" + response
+        texts = []
+        for i, u in enumerate(utterance):
+            text = u + "<sep>" + response[i]
+            texts.append(text)
+        x = self.lxrt_encoder(texts, img)
         logit = self.logit_fc(x)
 
         return logit
