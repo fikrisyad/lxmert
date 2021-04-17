@@ -217,7 +217,10 @@ if __name__ == "__main__":
         print('Splits in Train data:', vcsd.train_tuple.dataset.splits)
         if vcsd.valid_tuple is not None:
             print('Splits in Valid data:', vcsd.valid_tuple.dataset.splits)
-            print("Valid Oracle: %0.2f" % (vcsd.oracle_score(vcsd.valid_tuple) * 100))
+            # print("Valid Oracle: %0.2f" % (vcsd.oracle_score(vcsd.valid_tuple) * 100))
+            tp, tn, fp, fn = vcsd.oracle_score(vcsd.valid_tuple)
+            accu = (tp + tn) / (tp + tn + fp + fn)
+            print("Valid Oracle: %0.2f" % (accu * 100))
         else:
             print("DO NOT USE VALIDATION")
         vcsd.train(vcsd.train_tuple, vcsd.valid_tuple)
