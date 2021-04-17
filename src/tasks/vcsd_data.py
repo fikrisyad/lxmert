@@ -23,9 +23,10 @@ SPLIT2NAME = {
     'valid': 'val',
     'test': 'test',
 }
-
+CROP_SIZE = 224
 IMG_TRANSFORM = transforms.Compose([
-            transforms.RandomCrop(args.crop_size),
+            # transforms.RandomCrop(args.crop_size),
+            transforms.RandomCrop(CROP_SIZE),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             transforms.Normalize((0.485, 0.456, 0.406),
