@@ -138,7 +138,7 @@ class VCSDTorchDataset(Dataset):
 
 class VCSDEvaluator:
     def __init__(self, dataset: VCSDDataset):
-        self.datasets = dataset
+        self.dataset = dataset
 
     def evaluate(self, datumid2pred: dict):
         tp, tn, fp, fn = 0, 0, 0 , 0
