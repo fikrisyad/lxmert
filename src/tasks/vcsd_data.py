@@ -54,6 +54,7 @@ class VCSDDataset:
                     'raw_image_id': row['raw_image_id'],
                     'image_id': row['image_id'],
                     'utterance': row['utterance'],
+                    'response': row['response'],
                     'label': row['labels'],
                 }
                 self.data.append(r)
