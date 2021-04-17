@@ -48,7 +48,7 @@ class VCSDDataset:
         idx = 0
         for split in self.splits:
             # self.data.extend(json.load(open("data/vqa/%s.json" % split)))
-            for row in load_csv('{}static_{}_LIMIT-debug.csv'.format(VCSD_DATA_ROOT, split)):
+            for row in load_csv('{}static_{}_LIMIT-debug.csv'.format(VCSD_DATA_ROOT, split), delimiter='\t'):
                 r = {
                     'id': idx,
                     'raw_image_id': row['raw_image_id'],
