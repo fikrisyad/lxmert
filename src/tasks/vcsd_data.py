@@ -4,10 +4,10 @@ import pickle
 
 import numpy as np
 import torch
-import PIL as Image
 
 from torch.utils.data import Dataset
 from torchvision import transforms
+from PIL import Image
 
 from src.param import args
 from src.utils import load_obj_tsv, load_csv
