@@ -92,7 +92,7 @@ class VCSDTorchDataset(Dataset):
         else:
             topk = None
 
-        raw_img_data = {}
+        self.raw_img_data = {}
         counter = 0
         for split in dataset.splits:
             for datum in dataset.data:
@@ -101,14 +101,14 @@ class VCSDTorchDataset(Dataset):
                 raw_img_path = os.path.join(VCSD_IMG_RAW, '{}.jpg'.format(datum['raw_image_id']))
                 img = Image.open(raw_img_path).convert('RGB')
                 img = IMG_TRANSFORM(img)
-                raw_img_data[datum['id']] = {
+                self.raw_img_data[datum['id']] = {
                     'img_feat': img
                 }
                 counter += 1
 
         self.data = []
         for datum in self.raw_dataset.data:
-            if datum['id'] in raw_img_data:
+            if datum['id'] in self.raw_img_data:
                 self.data.append(datum)
         print("Use %d data in torch dataset" % (len(self.data)))
         print()
