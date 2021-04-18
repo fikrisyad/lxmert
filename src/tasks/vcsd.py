@@ -141,7 +141,7 @@ class VCSD:
                 logit = self.model(utterance, response, img)
                 score, label = logit.max(1)
                 for did, l in zip(datum_id, label.cpu().numpy()):
-                    datumid2pred[didi.item()] = l
+                    datumid2pred[did.item()] = l
         if dump is not None:
             evaluator.dump_result(datumid2pred, dump)
         return datumid2pred
