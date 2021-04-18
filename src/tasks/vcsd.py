@@ -196,13 +196,19 @@ if __name__ == "__main__":
 
     # Test or Train
     if args.test is not None:
-        args.fast = args.tiny = False       # Always loading all data in test
+        args.fast = args.tiny = False  # Always loading all data in test
         if 'test' in args.test:
-            vcsd.predict(
-                get_data_tuple(args.test, bs=950,
-                               shuffle=False, drop_last=False),
-                dump=os.path.join(args.output, 'test_predict.json')
+            # vcsd.predict(
+            #     get_data_tuple(args.test, bs=950,
+            #                    shuffle=False, drop_last=False),
+            #     dump=os.path.join(args.output, 'test_predict.json')
+            # )
+            accuracy, precision, recall, f1 = vcsd.evaluate(
+                get_data_tuple('test', bs=950,
+                               shuffle=False, drop_last=False)
             )
+            print("Test: accuracy %0.2f precision %0.2f recall %0.2f F1 %0.2f\n" % \
+                  (accuracy * 100., precision, recall, f1))
         elif 'val' in args.test:
             # Since part of valididation data are used in pre-training/fine-tuning,
             # only validate on the minival set.
