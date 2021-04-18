@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch
 
 from param import args
 from lxrt.entry import LXRTEncoder
@@ -18,6 +19,9 @@ class VCSDModel(nn.Module):
         )
         hid_dim = self.lxrt_encoder.dim
 
+        # VCSD image features dimensions adjuster
+        self.adaptive_pool = nn.AdaptiveAvgPool2d((36, 2048))
+
         # VCSD Classification head
         self.logit_fc = nn.Sequential(
             nn.Linear(hid_dim, hid_dim * 2),
@@ -33,6 +37,9 @@ class VCSDModel(nn.Module):
         for i, u in enumerate(utterance):
             text = u + "<sep>" + response[i]
             texts.append(text)
+
+        img = self.adaptive_pool(img)
+        img = torch.mean(img, dim=1)
         x = self.lxrt_encoder(texts, img)
         logit = self.logit_fc(x)
 

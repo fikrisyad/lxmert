@@ -145,6 +145,8 @@ class VCSDEvaluator:
         for datumid, pred in datumid2pred.items():
             datum = self.dataset.id2datum[datumid]
             label = datum['label']
+            pred = int(pred)
+            label = int(label)
 
             if label == pred:
                 if label == 0:

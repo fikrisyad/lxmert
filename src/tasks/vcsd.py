@@ -100,10 +100,10 @@ class VCSD:
 
                 score, label = logit.max(1)
                 for did, l in zip(datum_id, label.cpu().numpy()):
-                    datumid2pred[did] = l
+                    datumid2pred[did.item()] = l
             tp, tn, fp, fn = evaluator.evaluate(datumid2pred)
             accu = (tp + tn) / (tp + fp + fn + tn)
-            log_str = "\nEpoch %d: Train %0.2f\n" % (epoch, accu * 100.)
+            log_str = "\nEpoch %d: Train accuracy %0.2f\n" % (epoch, accu * 100.)
 
             if self.valid_tuple is not None:  # Do Validation
                 valid_accu, valid_prec, valid_rec, valid_f1 = self.evaluate(eval_tuple)
@@ -111,8 +111,9 @@ class VCSD:
                     best_valid = valid_accu
                     self.save("BEST")
 
-                log_str += "Epoch %d: Valid %0.2f\n" % (epoch, valid_accu * 100.) + \
-                           "Epoch %d: Best %0.2f\n" % (epoch, best_valid * 100.)
+                log_str += "Epoch %d: Valid accuracy %0.2f precision %0.2f recall %0.2f F1 %0.2f\n" % \
+                           (epoch, valid_accu * 100., valid_prec, valid_rec, valid_f1) + \
+                           "Epoch %d: Best accuracy %0.2f\n" % (epoch, best_valid * 100.)
 
             print(log_str, end='')
 
@@ -140,7 +141,7 @@ class VCSD:
                 logit = self.model(utterance, response, img)
                 score, label = logit.max(1)
                 for did, l in zip(datum_id, label.cpu().numpy()):
-                    datumid2pred[did] = l
+                    datumid2pred[didi.item()] = l
         if dump is not None:
             evaluator.dump_result(datumid2pred, dump)
         return datumid2pred
@@ -156,8 +157,8 @@ class VCSD:
         tp, tn, fp, fn = eval_tuple.evaluator.evaluate(datumid2preds)
 
         accu = (tp + tn) / (tp + fp + fn + tn)
-        precision = tp / (tp + fp)
-        recall = tp / (tp + fn)
+        precision = (tp / (tp + fp)) if (tp + fp) > 0 else 0
+        recall = (tp / (tp + fn)) if (tp + fn) > 0 else 0
         fmeasure = 0
         if precision + recall > 0:
             fmeasure = 2 * precision * recall / (precision + recall)
