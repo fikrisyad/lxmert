@@ -88,6 +88,9 @@ def parse_args():
     parser.add_argument("--multiGPU", action='store_const', default=False, const=True)
     parser.add_argument("--numWorkers", dest='num_workers', default=0)
 
+    # additional options by fikrisyad
+    parser.add_argument("--resizeImage", dest="resize_img", default=False, type=bool)
+
     # Parse the arguments.
     args = parser.parse_args()
 

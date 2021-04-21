@@ -14,9 +14,9 @@ from src.tasks.vcsd_data import VCSDDataset, VCSDTorchDataset, VCSDEvaluator
 DataTuple = collections.namedtuple("DataTuple", 'dataset loader evaluator')
 
 
-def get_data_tuple(splits: str, bs: int, shuffle=False, drop_last=False) -> DataTuple:
+def get_data_tuple(splits: str, bs: int, shuffle=False, drop_last=False, resize_img=False) -> DataTuple:
     dset = VCSDDataset(splits)
-    tset = VCSDTorchDataset(dset)
+    tset = VCSDTorchDataset(dset, resize_img)
     evaluator = VCSDEvaluator(dset)
     data_loader = DataLoader(
         tset, batch_size=bs,
@@ -31,12 +31,12 @@ class VCSD:
     def __init__(self):
         # Datasets
         self.train_tuple = get_data_tuple(
-            args.train, bs=args.batch_size, shuffle=True, drop_last=True
+            args.train, bs=args.batch_size, shuffle=True, drop_last=True, resize_img=args.resize_img
         )
         if args.valid != "":
             self.valid_tuple = get_data_tuple(
                 args.valid, bs=4,
-                shuffle=False, drop_last=False
+                shuffle=False, drop_last=False, resize_img=args.resize_img
             )
         else:
             self.valid_tuple = None
@@ -185,3 +185,51 @@ class VCSD:
         print("Load model from %s" % path)
         state_dict = torch.load("%s.pth" % path)
         self.model.load_state_dict(state_dict)
+
+
+if __name__ == "__main__":
+    # Build Class
+    vcsd = VCSD()
+
+    # Load VQA model weights
+    # Note: It is different from loading LXMERT pre-trained weights.
+    if args.load is not None:
+        vcsd.load(args.load)
+
+    # Test or Train
+    if args.test is not None:
+        args.fast = args.tiny = False  # Always loading all data in test
+        if 'test' in args.test:
+            # vcsd.predict(
+            #     get_data_tuple(args.test, bs=950,
+            #                    shuffle=False, drop_last=False),
+            #     dump=os.path.join(args.output, 'test_predict.json')
+            # )
+            accuracy, precision = vcsd.evaluate(
+                get_data_tuple('test', bs=950,
+                               shuffle=False, drop_last=False, resize_img=args.resize_img)
+            )
+            print("Test: accuracy %0.2f precision %0.2f\n" % \
+                  (accuracy * 100., precision))
+        elif 'val' in args.test:
+            # Since part of valididation data are used in pre-training/fine-tuning,
+            # only validate on the minival set.
+            result = vcsd.evaluate(
+                get_data_tuple('val', bs=950,
+                               shuffle=False, drop_last=False)
+                # dump=os.path.join(args.output, 'minival_predict.json')
+            )
+            print(result)
+        else:
+            assert False, "No such test option for %s" % args.test
+    else:
+        print('Splits in Train data:', vcsd.train_tuple.dataset.splits)
+        if vcsd.valid_tuple is not None:
+            print('Splits in Valid data:', vcsd.valid_tuple.dataset.splits)
+            # print("Valid Oracle: %0.2f" % (vcsd.oracle_score(vcsd.valid_tuple) * 100))
+            tp, tn, fp, fn = vcsd.oracle_score(vcsd.valid_tuple)
+            accu = (tp + tn) / (tp + tn + fp + fn)
+            print("Valid Oracle: %0.2f" % (accu * 100))
+        else:
+            print("DO NOT USE VALIDATION")
+        vcsd.train(vcsd.train_tuple, vcsd.valid_tuple)
