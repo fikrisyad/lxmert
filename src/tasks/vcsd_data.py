@@ -8,6 +8,7 @@ import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
 from PIL import Image
+from os import path
 
 from src.param import args
 from src.utils import load_obj_tsv, load_csv
@@ -16,21 +17,24 @@ TINY_IMG_NUM = 512
 FAST_IMG_NUM = 5000
 
 VCSD_IMG_RAW = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/data/resized_raw/'
+VCSD_IMG_OG_PATH1 = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/data/visgen/VG_100K/'
+VCSD_IMG_OG_PATH2 = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/data/visgen/VG_100K_2/'
 VCSD_DATA_ROOT = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/data/visgen_combined/'
+VCSD_FILE_BASE = 'vcsd_img_prediction_'
 
 SPLIT2NAME = {
     'train': 'train',
     'valid': 'val',
     'test': 'test',
 }
-CROP_SIZE = 256
+CROP_SIZE = 224
 IMG_TRANSFORM = transforms.Compose([
-            # transforms.RandomCrop(args.crop_size),
-            transforms.RandomCrop(CROP_SIZE),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize((0.485, 0.456, 0.406),
-                                 (0.229, 0.224, 0.225))])
+    # transforms.RandomCrop(args.crop_size),
+    transforms.RandomCrop(CROP_SIZE),
+    transforms.RandomHorizontalFlip(),
+    transforms.ToTensor(),
+    transforms.Normalize((0.485, 0.456, 0.406),
+                         (0.229, 0.224, 0.225))])
 
 
 class VCSDDataset:
@@ -48,14 +52,14 @@ class VCSDDataset:
         idx = 0
         for split in self.splits:
             # self.data.extend(json.load(open("data/vqa/%s.json" % split)))
-            for row in load_csv('{}static_{}_LIMIT-debug.csv'.format(VCSD_DATA_ROOT, split), delimiter='\t'):
+            for row in load_csv('{}{}_.csv'.format(VCSD_DATA_ROOT, split), delimiter='\t'):
                 r = {
                     'id': idx,
                     'raw_image_id': row['raw_image_id'],
                     'image_id': row['image_id'],
                     'utterance': row['utterance'],
                     'response': row['response'],
-                    'label': row['labels'],
+                    'label': row['label'],
                 }
                 self.data.append(r)
                 idx += 1
@@ -81,7 +85,7 @@ class VCSDDataset:
 
 
 class VCSDTorchDataset(Dataset):
-    def __init__(self, dataset: VCSDDataset):
+    def __init__(self, dataset: VCSDDataset, resize_img: bool):
         super().__init__()
         self.raw_dataset = dataset
 
@@ -98,7 +102,13 @@ class VCSDTorchDataset(Dataset):
             for datum in dataset.data:
                 if topk is not None and counter == topk:
                     break
-                raw_img_path = os.path.join(VCSD_IMG_RAW, '{}.jpg'.format(datum['raw_image_id']))
+                if resize_img:
+                    raw_img_path = os.path.join(VCSD_IMG_RAW, '{}.jpg'.format(datum['raw_image_id']))
+                else:
+                    if path.exists(VCSD_IMG_OG_PATH1 + datum['raw_image_id'] + '.jpg'):
+                        raw_img_path = os.path.join(VCSD_IMG_OG_PATH1, '{}.jpg'.format(datum['raw_image_id']))
+                    else:
+                        raw_img_path = os.path.join(VCSD_IMG_OG_PATH2, '{}.jpg'.format(datum['raw_image_id']))
                 img = Image.open(raw_img_path).convert('RGB')
                 img = IMG_TRANSFORM(img)
                 self.raw_img_data[datum['id']] = {
@@ -141,7 +151,7 @@ class VCSDEvaluator:
         self.dataset = dataset
 
     def evaluate(self, datumid2pred: dict):
-        tp, tn, fp, fn = 0, 0, 0 , 0
+        tp, tn, fp, fn = 0, 0, 0, 0
         for datumid, pred in datumid2pred.items():
             datum = self.dataset.id2datum[datumid]
             label = datum['label']
@@ -160,5 +170,20 @@ class VCSDEvaluator:
                     fn += 1
 
         return tp, tn, fp, fn
+
+    def eval_predictions(self, datumid2pred: dict):
+        tp, fp = 0, 0
+        for datumid, pred in datumid2pred.items():
+            datum = self.dataset.id2datum[datumid]
+            label = datum['label']
+            raw_id = datum['raw_image_id']
+            pred_datum = self.dataset.id2datum[pred]
+            pred_raw_id = pred_datum['raw_image_id']
+
+            if raw_id == pred_raw_id:
+                tp += 1
+            else:
+                fp += 1
+        return tp, fp
 
 
