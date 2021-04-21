@@ -13,5 +13,5 @@ CUDA_VISIBLE_DEVICES=$1 PYTHONPATH=$PYTHONPATH:./src \
     --train train --valid val  \
     --llayers 9 --xlayers 5 --rlayers 5 \
     --batchSize 32 --optim bert --lr 5e-5 --epochs 10 \
-    --resizeImg 1 \
+    --resizeImage 1 \
     --tqdm --output $output ${@:3}
