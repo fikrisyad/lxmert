@@ -133,11 +133,13 @@ class VCSD:
         self.model.eval()
         dset, loader, evaluator = eval_tuple
         datumid2pred = {}
+        softmax = nn.Softmax(dim=1)
         for i, datum_tuple in enumerate(loader):
             datum_id, raw_image_id, image_id, utterance, response, img = datum_tuple[:6]  # avoid seeing ground truth
             with torch.no_grad():
                 img = img.cuda()
                 logit = self.model(utterance, response, img)
+                logit = softmax(logit)
                 pred_idx = torch.argmax(logit[:, 1], dim=0).item()
                 pos_datum_id = datum_id[0].item()
                 pred_datum_id = datum_id[pred_idx].item()
