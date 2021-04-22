@@ -11,7 +11,7 @@ from PIL import Image
 from os import path
 
 from src.param import args
-from src.utils import load_obj_tsv, load_csv
+from src.utils import load_obj_tsv, load_csv, write_to_csv
 
 TINY_IMG_NUM = 512
 FAST_IMG_NUM = 5000
@@ -185,5 +185,29 @@ class VCSDEvaluator:
             else:
                 fp += 1
         return tp, fp
+
+    def dump_results(self, datumid2pred: dict, path):
+        fieldnames = ['image_id', 'utterance', 'response', 'raw_image_id', 'pred_raw_id']
+        rows = []
+        for datumid, pred in datumid2pred.items():
+            datum = self.dataset.id2datum[datumid]
+            pred_datum = self.dataset.id2datum[pred]
+
+            utterance = datum['utterance']
+            response = datum['response']
+            raw_id = datum['raw_image_id']
+            iid = datum['image_id']
+            pred_raw_id = pred_datum['raw_image_id']
+            rows.append({
+                'image_id': iid,
+                'utterance': utterance,
+                'response': response,
+                'raw_image_id': raw_id,
+                'pred_raw_id': pred_raw_id
+            })
+
+        write_to_csv(path, fieldnames, rows, delimiter='\t')
+
+
 
 

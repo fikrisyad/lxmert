@@ -105,12 +105,12 @@ class VCSD:
             log_str = "\nEpoch %d: Train accuracy %0.2f\n" % (epoch, accu * 100.)
 
             if self.valid_tuple is not None:  # Do Validation
-                valid_accu, valid_prec = self.evaluate(eval_tuple)
+                valid_accu, valid_prec = self.evaluate(eval_tuple, self.output+'/val_results.csv')
                 if valid_accu > best_valid:
                     best_valid = valid_accu
                     self.save("BEST")
 
-                log_str += "Epoch %d: Valid accuracy %0.2f precision %0.2f" % \
+                log_str += "Epoch %d: Valid accuracy %0.2f precision %0.2f\n" % \
                            (epoch, valid_accu * 100., valid_prec) + \
                            "Epoch %d: Best accuracy %0.2f\n" % (epoch, best_valid * 100.)
 
@@ -146,7 +146,7 @@ class VCSD:
                 # for did, l in zip(datum_id, label.cpu().numpy()):
                 #     datumid2pred[did.item()] = l
         if dump is not None:
-            evaluator.dump_result(datumid2pred, dump)
+            evaluator.dump_results(datumid2pred, dump)
         return datumid2pred
 
     def evaluate(self, eval_tuple: DataTuple, dump=None):
@@ -158,7 +158,7 @@ class VCSD:
         datumid2preds = self.predict(eval_tuple, dump)
         tp, fp = eval_tuple.evaluator.eval_predictions(datumid2preds)
 
-        accu = (tp + tn) / (tp + fp)
+        accu = tp / (tp + fp)
         precision = (tp / (tp + fp))
 
         # fmeasure = 0
@@ -207,7 +207,8 @@ if __name__ == "__main__":
             # )
             accuracy, precision = vcsd.evaluate(
                 get_data_tuple('test', bs=950,
-                               shuffle=False, drop_last=False, resize_img=args.resize_img)
+                               shuffle=False, drop_last=False, resize_img=args.resize_img),
+                args.output+'/test_results.csv'
             )
             print("Test: accuracy %0.2f precision %0.2f\n" % \
                   (accuracy * 100., precision))

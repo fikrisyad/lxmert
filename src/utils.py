@@ -65,3 +65,10 @@ def load_csv(filename, delimiter=',', topk=None):
                 break
             yield row
 
+
+def write_to_csv(filename, fieldnames, rows, delimiter='\t'):
+    with open(filename, 'w') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=delimiter)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
