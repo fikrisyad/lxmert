@@ -205,7 +205,7 @@ if __name__ == "__main__":
             # )
             accuracy, precision, recall, f1 = vcsd.evaluate(
                 get_data_tuple('test', bs=950,
-                               shuffle=False, drop_last=False),
+                               shuffle=False, drop_last=False, resize_img=args.resize_img),
                 args.output + '/test_results.csv'
             )
             print("Test: accuracy %0.2f precision %0.2f recall %0.2f F1 %0.2f\n" % \
