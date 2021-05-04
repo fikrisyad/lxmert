@@ -20,7 +20,8 @@ VCSD_IMG_RAW = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/data/r
 VCSD_IMG_OG_PATH1 = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/data/visgen/VG_100K/'
 VCSD_IMG_OG_PATH2 = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/data/visgen/VG_100K_2/'
 VCSD_DATA_ROOT = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/data/visgen_combined/'
-VCSD_FILE_BASE = 'vcsd_img_prediction_'
+# VCSD_FILE_BASE = 'vcsd_img_prediction_'
+VCSD_FILE_BASE = 'vcsd_static_LIMIT_'
 
 SPLIT2NAME = {
     'train': 'train',
