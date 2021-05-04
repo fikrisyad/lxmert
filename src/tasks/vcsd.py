@@ -15,9 +15,9 @@ from src.tasks.vcsd_data import VCSDDataset, VCSDTorchDataset, VCSDEvaluator
 DataTuple = collections.namedtuple("DataTuple", 'dataset loader evaluator')
 
 
-def get_data_tuple(splits: str, bs: int, shuffle=False, drop_last=False) -> DataTuple:
+def get_data_tuple(splits: str, bs: int, shuffle=False, drop_last=False, resize_img=False) -> DataTuple:
     dset = VCSDDataset(splits)
-    tset = VCSDTorchDataset(dset)
+    tset = VCSDTorchDataset(dset, resize_img)
     evaluator = VCSDEvaluator(dset)
     data_loader = DataLoader(
         tset, batch_size=bs,
@@ -32,12 +32,12 @@ class VCSD:
     def __init__(self):
         # Datasets
         self.train_tuple = get_data_tuple(
-            args.train, bs=args.batch_size, shuffle=True, drop_last=True
+            args.train, bs=args.batch_size, shuffle=True, drop_last=True, resize_img=args.resize_img
         )
         if args.valid != "":
             self.valid_tuple = get_data_tuple(
                 args.valid, bs=1024,
-                shuffle=False, drop_last=False
+                shuffle=False, drop_last=False, resize_img=args.resize_img
             )
         else:
             self.valid_tuple = None
@@ -143,7 +143,7 @@ class VCSD:
                 for did, l in zip(datum_id, label.cpu().numpy()):
                     datumid2pred[did.item()] = l
         if dump is not None:
-            evaluator.dump_result(datumid2pred, dump)
+            evaluator.dump_output(datumid2pred, dump)
         return datumid2pred
 
     def evaluate(self, eval_tuple: DataTuple, dump=None):
@@ -205,7 +205,8 @@ if __name__ == "__main__":
             # )
             accuracy, precision, recall, f1 = vcsd.evaluate(
                 get_data_tuple('test', bs=950,
-                               shuffle=False, drop_last=False)
+                               shuffle=False, drop_last=False),
+                args.output + '/test_results.csv'
             )
             print("Test: accuracy %0.2f precision %0.2f recall %0.2f F1 %0.2f\n" % \
                   (accuracy * 100., precision, recall, f1))

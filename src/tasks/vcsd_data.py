@@ -208,6 +208,23 @@ class VCSDEvaluator:
 
         write_to_csv(path, fieldnames, rows, delimiter='\t')
 
+    def dump_output(self, datumid2pred: dict, path):
+        fieldnames = ['raw_image_id', 'image_id', 'utterance', 'response', 'label', 'pred']
+        rows = []
+        for datumid, pred in datumid2pred.items():
+            datum = self.dataset.id2datum[datumid]
+            label = datum['label']
+            pred = int(pred)
+            label = int(label)
+
+            row = {
+                'raw_image_id': datum['raw_image_id'],
+                'image_id': datum['image_id'],
+                'utterance': datum['utterance'],
+                'label': label,
+                'pred': pred
+            }
+
 
 
 
