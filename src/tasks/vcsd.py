@@ -215,7 +215,7 @@ if __name__ == "__main__":
             # only validate on the minival set.
             result = vcsd.evaluate(
                 get_data_tuple('val', bs=950,
-                               shuffle=False, drop_last=False)
+                               shuffle=False, drop_last=False, resize_img=args.resize_img)
                 # dump=os.path.join(args.output, 'minival_predict.json')
             )
             print(result)
