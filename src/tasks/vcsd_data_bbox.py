@@ -21,7 +21,7 @@ VCSD_IMG_OG_PATH1 = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/d
 VCSD_IMG_OG_PATH2 = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/data/visgen/VG_100K_2/'
 VCSD_DATA_ROOT = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/data/visgen_combined/'
 # VCSD_FILE_BASE = 'vcsd_img_prediction_'
-VCSD_FILE_BASE = 'vcsd_static_LIMIT_'
+VCSD_FILE_BASE = 'static_bbox_'
 
 SPLIT2NAME = {
     'train': 'train',
@@ -53,7 +53,7 @@ class VCSDDataset:
         idx = 0
         for split in self.splits:
             # self.data.extend(json.load(open("data/vqa/%s.json" % split)))
-            for row in load_csv('{}{}{}.csv'.format(VCSD_DATA_ROOT, VCSD_FILE_BASE, split), delimiter='\t'):
+            for row in load_csv('{}{}{}_LIMIT.csv'.format(VCSD_DATA_ROOT, VCSD_FILE_BASE, split), delimiter='\t'):
                 r = {
                     'id': idx,
                     'raw_image_id': row['raw_image_id'],
