@@ -171,7 +171,7 @@ class VCSD:
     def oracle_score(data_tuple):
         dset, loader, evaluator = data_tuple
         datumid2preds = {}
-        for i, (datum_id, raw_image_id, image_id, utterance, response, img, target) in enumerate(loader):
+        for i, (datum_id, raw_image_id, image_id, utterance, response, img, bboxes, target) in enumerate(loader):
             _, label = target.max(1)
             for did, l in zip(datum_id, label.cpu().numpy()):
                 datumid2preds[i] = l
