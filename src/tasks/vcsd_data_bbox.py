@@ -60,7 +60,7 @@ class VCSDDataset:
                     'image_id': row['image_id'],
                     'utterance': row['utterance'],
                     'response': row['response'],
-                    'label': row['label'],
+                    'label': row['labels'],
                     'person1': row['person1'],
                     'person2': row['person2']
                 }
