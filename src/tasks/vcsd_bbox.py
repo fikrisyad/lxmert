@@ -140,6 +140,7 @@ class VCSD:
             datum_id, raw_image_id, image_id, utterance, response, img, bboxes = datum_tuple[:7]  # avoid seeing ground truth
             with torch.no_grad():
                 img = img.cuda()
+                bboxes = bboxes.cuda()
                 logit = self.model(utterance, response, img, bboxes)
                 score, label = logit.max(1)
                 for did, l in zip(datum_id, label.cpu().numpy()):
