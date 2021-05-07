@@ -158,8 +158,8 @@ class VCSDTorchDataset(Dataset):
         img = self.raw_img_data[datum['id']]['img_feat']
         person1 = self.speakers_boxes[datum['id']]['person1_bbox']
         person2 = self.speakers_boxes[datum['id']]['person2_bbox']
-        person1_bbox = torch.tensor([person1['xmin'], person1['ymin'], person1['xmax'], person1['ymax']])
-        person2_bbox = torch.tensor([person2['xmin'], person2['ymin'], person2['xmax'], person2['ymax']])
+        person1_bbox = torch.tensor([person1['xmin'], person1['ymin'], person1['xmax'], person1['ymax']]).unsqueeze(0)
+        person2_bbox = torch.tensor([person2['xmin'], person2['ymin'], person2['xmax'], person2['ymax']]).unsqueeze(0)
         bboxes = torch.cat([person1_bbox, person2_bbox], dim=0)
 
         if 'label' in datum:
