@@ -251,6 +251,6 @@ class VCSDEvaluator:
                 'pred': pred
             }
 
-
+        write_to_csv(path, fieldnames, rows, delimiter='\t')
 
 
