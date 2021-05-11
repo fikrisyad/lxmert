@@ -250,7 +250,7 @@ class VCSDEvaluator:
                 'label': label,
                 'pred': pred
             }
-
+            rows.append(row)
         write_to_csv(path, fieldnames, rows, delimiter='\t')
 
 
