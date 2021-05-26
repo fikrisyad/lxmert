@@ -21,7 +21,7 @@ VCSD_IMG_OG_PATH1 = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/d
 VCSD_IMG_OG_PATH2 = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/data/visgen/VG_100K_2/'
 VCSD_DATA_ROOT = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/data/visgen_combined/'
 # VCSD_FILE_BASE = 'vcsd_img_prediction_'
-VCSD_FILE_BASE = 'static_bbox_'
+VCSD_FILE_BASE = 'vcsd_bbox_topic_'
 
 SPLIT2NAME = {
     'train': 'train',
@@ -60,9 +60,10 @@ class VCSDDataset:
                     'image_id': row['image_id'],
                     'utterance': row['utterance'],
                     'response': row['response'],
-                    'label': row['labels'],
+                    'label': row['label'],
                     'person1': row['person1'],
-                    'person2': row['person2']
+                    'person2': row['person2'],
+                    'topic': row['topic']
                 }
                 self.data.append(r)
                 idx += 1
@@ -121,6 +122,7 @@ class VCSDTorchDataset(Dataset):
 
                 xmin1, ymin1, width1, height1 = datum['person1'].split(";")[:4]
                 xmin2, ymin2, width2, height2 = datum['person2'].split(";")[:4]
+                xmin3, ymin3, width3, height3 = datum['topic'].split(";")
                 self.speakers_boxes[datum['id']] = {
                     'person1_bbox': {
                         'xmin': float(xmin1),
@@ -133,6 +135,12 @@ class VCSDTorchDataset(Dataset):
                         'ymin': float(ymin2),
                         'xmax': float(xmin2) + float(width2),
                         'ymax': float(ymin2) + float(height2)
+                    },
+                    'topic_bbox': {
+                        'xmin': float(xmin3),
+                        'ymin': float(ymin3),
+                        'xmax': float(xmin3) + float(width3),
+                        'ymax': float(ymin3) + float(height3)
                     }
                 }
                 counter += 1
@@ -158,9 +166,11 @@ class VCSDTorchDataset(Dataset):
         img = self.raw_img_data[datum['id']]['img_feat']
         person1 = self.speakers_boxes[datum['id']]['person1_bbox']
         person2 = self.speakers_boxes[datum['id']]['person2_bbox']
+        topic = self.speakers_boxes[datum['id']]['topic_bbox']
         person1_bbox = torch.tensor([person1['xmin'], person1['ymin'], person1['xmax'], person1['ymax']]).unsqueeze(0)
         person2_bbox = torch.tensor([person2['xmin'], person2['ymin'], person2['xmax'], person2['ymax']]).unsqueeze(0)
-        bboxes = torch.cat([person1_bbox, person2_bbox], dim=0)
+        topic_bbox = torch.tensor([topic['xmin'], topic['ymin'], topic['xmax'], topic['ymax']]).unsqueeze(0)
+        bboxes = torch.cat([person1_bbox, person2_bbox, topic_bbox], dim=0)
 
         if 'label' in datum:
             label = int(datum['label'])
