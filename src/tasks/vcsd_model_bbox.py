@@ -21,7 +21,7 @@ class VCSDModel(nn.Module):
 
         # VCSD image features dimensions adjuster
         self.adaptive_pool = nn.AdaptiveAvgPool2d((36, 2048))
-        self.lin = nn.Linear(3, 36)
+        self.lin = nn.Linear(90, 36)
 
         # VCSD Classification head
         self.logit_fc = nn.Sequential(

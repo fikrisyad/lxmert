@@ -265,3 +265,141 @@ class VCSDEvaluator:
         write_to_csv(path, fieldnames, rows, delimiter='\t')
 
 
+"""
+Dataset classes for data with all  VG regions
+"""
+
+
+class VCSDDatasetVGRegions:
+    """
+    VCSD Dataset with all VG Regions: format csv/tsv:
+    row: raw_image_id, image_id, utterance, response, label, regions
+    """
+
+    def __init__(self, splits: str):
+        self.name = splits
+        self.splits = splits.split(',')
+
+        # Loading datasets
+        self.data = []
+        idx = 0
+        for split in self.splits:
+            # self.data.extend(json.load(open("data/vqa/%s.json" % split)))
+            for row in load_csv('{}{}{}.csv'.format(VCSD_DATA_ROOT, VCSD_FILE_BASE, split), delimiter='\t'):
+                r = {
+                    'id': idx,
+                    'raw_image_id': row['raw_image_id'],
+                    'image_id': row['image_id'],
+                    'utterance': row['utterance'],
+                    'response': row['response'],
+                    'label': row['label'],
+                    'regions': row['regions']
+                }
+                self.data.append(r)
+                idx += 1
+
+        print("Load %d data from split(s) %s." % (len(self.data), self.name))
+
+        # Convert list to dict (for evaluation)
+        self.id2datum = {
+            datum['id']: datum
+            for datum in self.data
+        }
+
+    @property
+    # def num_answers(self):
+    #     return len(self.ans2label)
+    def __len__(self):
+        return len(self.data)
+
+
+class VCSDTorchDatasetVGRegions(Dataset):
+    def __init__(self, dataset: VCSDDatasetVGRegions, resize_img: bool):
+        super().__init__()
+        self.raw_dataset = dataset
+
+        if args.tiny:
+            topk = TINY_IMG_NUM
+        elif args.fast:
+            topk = FAST_IMG_NUM
+        else:
+            topk = None
+
+        self.raw_img_data = {}
+        self.bboxes = {}
+        region_lengths = []
+        counter = 0
+        for split in dataset.splits:
+            for datum in dataset.data:
+                if topk is not None and counter == topk:
+                    break
+                if resize_img:
+                    raw_img_path = os.path.join(VCSD_IMG_RAW, '{}.jpg'.format(datum['raw_image_id']))
+                else:
+                    if path.exists(VCSD_IMG_OG_PATH1 + datum['raw_image_id'] + '.jpg'):
+                        raw_img_path = os.path.join(VCSD_IMG_OG_PATH1, '{}.jpg'.format(datum['raw_image_id']))
+                    else:
+                        raw_img_path = os.path.join(VCSD_IMG_OG_PATH2, '{}.jpg'.format(datum['raw_image_id']))
+                img = Image.open(raw_img_path).convert('RGB')
+                img = IMG_TRANSFORM(img)
+                self.raw_img_data[datum['id']] = {
+                    'img_feat': img
+                }
+
+                regions = datum['regions'].split(';')
+                region_lengths.append(len(regions))
+                boxes = []
+                for region in regions:
+                    x1, y1, x2, y2 = (float(x) for x in region.split(','))
+                    boxes.append({
+                        'xmin': x1,
+                        'ymin': y1,
+                        'xmax': x2,
+                        'ymax': y2
+                    })
+                self.bboxes[datum['id']] = boxes
+
+                counter += 1
+        self.max_region = max(region_lengths)
+        self.data = []
+        for datum in self.raw_dataset.data:
+            if datum['id'] in self.raw_img_data:
+                self.data.append(datum)
+        print("Use %d data in torch dataset" % (len(self.data)))
+        print()
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, item: int):
+        datum = self.data[item]
+        datum_id = datum['id']
+        raw_image_id = datum['raw_image_id']
+        image_id = datum['image_id']
+        utterance = datum['utterance']
+        response = datum['response']
+        # label = datum['label']
+        img = self.raw_img_data[datum['id']]['img_feat']
+        # max_region = self.max_region
+        max_region = 90
+        bboxes_seqs = torch.zeros(max_region, 4)
+        # bboxes_tensors = []
+        bboxes = self.bboxes[datum_id]
+        for i, box in enumerate(bboxes):
+            if i < max_region:
+                bbox_tensor = torch.tensor([box['xmin'], box['ymin'], box['xmax'], box['ymax']])
+                # bboxes_tensors.append(bbox_tensor)
+                bboxes_seqs[i] = bbox_tensor
+            else:
+                break
+
+        if 'label' in datum:
+            label = int(datum['label'])
+            target = torch.zeros(2)
+            target[label] = 1
+
+            return datum_id, raw_image_id, image_id, utterance, response, img, bboxes_seqs, target
+        else:
+            return datum_id, raw_image_id, image_id, utterance, response, img, bboxes_seqs
+
+

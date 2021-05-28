@@ -10,7 +10,8 @@ from torchmetrics import F1
 from src.param import args
 from src.pretrain.qa_answer_table import load_lxmert_qa
 from src.tasks.vcsd_model_bbox import VCSDModel
-from src.tasks.vcsd_data_bbox import VCSDDataset, VCSDTorchDataset, VCSDEvaluator
+from src.tasks.vcsd_data_bbox import VCSDDataset, VCSDTorchDataset, VCSDEvaluator, VCSDDatasetVGRegions, \
+    VCSDTorchDatasetVGRegions
 
 DataTuple = collections.namedtuple("DataTuple", 'dataset loader evaluator')
 
