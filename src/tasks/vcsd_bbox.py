@@ -17,8 +17,10 @@ DataTuple = collections.namedtuple("DataTuple", 'dataset loader evaluator')
 
 
 def get_data_tuple(splits: str, bs: int, shuffle=False, drop_last=False, resize_img=False) -> DataTuple:
-    dset = VCSDDataset(splits)
-    tset = VCSDTorchDataset(dset, resize_img)
+    # dset = VCSDDataset(splits)
+    dset = VCSDDatasetVGRegions
+    # tset = VCSDTorchDataset(dset, resize_img)
+    tset = VCSDTorchDatasetVGRegions(dset, resize_img)
     evaluator = VCSDEvaluator(dset)
     data_loader = DataLoader(
         tset, batch_size=bs,
