@@ -351,13 +351,14 @@ class VCSDTorchDatasetVGRegions(Dataset):
                 region_lengths.append(len(regions))
                 boxes = []
                 for region in regions:
-                    x1, y1, x2, y2 = (float(x) for x in region.split(','))
-                    boxes.append({
-                        'xmin': x1,
-                        'ymin': y1,
-                        'xmax': x2,
-                        'ymax': y2
-                    })
+                    if len(region) > 0:
+                        x1, y1, x2, y2 = (float(x) for x in region.split(','))
+                        boxes.append({
+                            'xmin': x1,
+                            'ymin': y1,
+                            'xmax': x2,
+                            'ymax': y2
+                        })
                 self.bboxes[datum['id']] = boxes
 
                 counter += 1
