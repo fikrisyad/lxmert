@@ -21,7 +21,8 @@ VCSD_IMG_OG_PATH1 = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/d
 VCSD_IMG_OG_PATH2 = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/data/visgen/VG_100K_2/'
 VCSD_DATA_ROOT = '/home/lr/fikrisyad/workspace/playground/image_conv/yunjey/data/visgen_combined/'
 # VCSD_FILE_BASE = 'vcsd_img_prediction_'
-VCSD_FILE_BASE = 'vcsd_bbox_topic_'
+# VCSD_FILE_BASE = 'vcsd_bbox_topic_'
+VCSD_FILE_BASE = 'vcsd_bbox_vgregions_'
 
 SPLIT2NAME = {
     'train': 'train',
