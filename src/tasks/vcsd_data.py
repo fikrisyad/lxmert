@@ -222,6 +222,7 @@ class VCSDEvaluator:
                 'raw_image_id': datum['raw_image_id'],
                 'image_id': datum['image_id'],
                 'utterance': datum['utterance'],
+                'response': datum['response'],
                 'label': label,
                 'pred': pred
             }
